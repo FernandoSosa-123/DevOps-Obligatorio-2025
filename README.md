@@ -35,6 +35,10 @@ git pull
 
 .env: Variables locales (NUNCA subir a Git)
 
+.venv/ Entorno virtual de python (NUNCA subir a git)
+
+test_deploy_app.py Script temporal para testeo (NUNCA subir a git)
+
 # PYTHON Y CREACION DE AMBIENTE VIRTUAL
 verificar primero si esta python instalado python3 --version
 
