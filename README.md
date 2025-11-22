@@ -45,3 +45,11 @@ source .venv/bin/activate
 
 ## Desactivacion del entorno
 deactivate
+
+## Instalacion de Dependencias 
+### Activar tu entorno virtual
+source .venv/bin/activate
+
+### Instalar desde requirements.txt
+pip install -r requirements.txt
+
