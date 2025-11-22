@@ -17,16 +17,22 @@ git clone git@github.com:FernandoSosa-123/DevOps-Obligatorio-2025.git
 
 ## Flujo de trabajo diario github
 ### Hacer cambios en archivos...
-git add . (todos los archivos) //  git add nombre_archivo (un solo archivo)
+git add . (todos los archivos) //
+git add nombre_archivo (un solo archivo)
+
 git status (verifica los cambios a subir)
+
 git commit -m "Descripción de los cambios"
+
 git push 
 ### Sincronizar con main
 git pull
 
 ## Archivos importantes github
 .gitignore: Archivos que Git ignorará
+
 .env.example: Template de variables de entorno
+
 .env: Variables locales (NUNCA subir a Git)
 
 # PYTHON Y CREACION DE AMBIENTE VIRTUAL
@@ -34,7 +40,9 @@ verificar primero si esta python instalado python3 --version
 
 ## instalacion python y modulo ambiente virtual
 sudo apt update
+
 sudo apt install python3
+
 sudo apt install python3-venv
 
 ## creacion de ambiente virtual
