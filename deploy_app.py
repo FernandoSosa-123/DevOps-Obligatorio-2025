@@ -172,6 +172,50 @@ def crear_base_de_datos(rds, sg_db_id):
             print("La instancia de base de datos ya existe")
         else:
             raise
+            
+def crear_cliente_ec2_resource():
+    ec2_resource = boto3.resource(
+        'ec2',
+        aws_access_key_id=aws_access_key_id,  
+        aws_secret_access_key=aws_secret_access_key,  
+        aws_session_token=aws_session_token,  
+        region_name=aws_region  
+    )
+    return ec2_resource
+            
+def crear_instancia_ec2(ec2_resource, sg_ec2_id):
+    existing_instances = list(ec2_resource.instances.filter(
+        Filters=[
+            {'Name': 'tag:Name', 'Values': [aws_ec2_name]},
+            {'Name': 'instance-state-name', 'Values': ['running', 'stopped']}
+        ]
+    ))
+    
+    if existing_instances:
+        instance_id = existing_instances[0].id
+        print(f"La instancia EC2 '{aws_ec2_name}' ya existe con ID: {instance_id}")
+        return instance_id
+    try:
+        instances = ec2_resource.create_instances(
+            ImageId=aws_image_id,
+            MinCount=1,
+            MaxCount=1,
+            InstanceType=aws_instance_type, 
+            KeyName=key_name,
+            SecurityGroupIds=[sg_ec2_id],
+            TagSpecifications=[
+                {
+                    'ResourceType': 'instance',
+                    'Tags': [{'Key': 'Name', 'Value': aws_ec2_name}]
+                }
+            ]
+        )
+        instance_id = instances[0].id
+        print("Instancia creada con ID:", instance_id)
+        return instance_id
+    except Exception as e:
+        print(f"Error creando instancia EC2: {e}")
+        raise
 
 if __name__ == "__main__":
     cliente_ec2 = crear_cliente_ec2()
@@ -181,3 +225,5 @@ if __name__ == "__main__":
     crear_reglas_de_seguridad(cliente_ec2, sg_ec2_id, sg_db_id)
     cliente_rds = crear_cliente_rds()
     crear_base_de_datos(cliente_rds, sg_db_id)
+    ec2_resource = crear_cliente_ec2_resource()
+    instance_id = crear_instancia_ec2(ec2_resource, sg_ec2_id)

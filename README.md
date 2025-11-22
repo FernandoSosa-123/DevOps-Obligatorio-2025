@@ -1,5 +1,7 @@
 # DevOps-Obligatorio-2025
 Aqui se describiran los pasos y herramientas usadas para completar la aplicacion
+
+El script principal para desplegar la aplicacion es: deploy_app.py
 # GITHUB
 
 Instalación y configuración inicial de github (una vez)
