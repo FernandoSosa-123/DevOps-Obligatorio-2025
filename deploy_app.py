@@ -46,6 +46,7 @@ def crear_grupo_seguridad_ec2(ec2):
         response = ec2.create_security_group(GroupName=sg_ec2_name, Description="Grupo de seguridad para mi ec2")
         sg_ec2_id = response['GroupId']
         print(f"Grupo de seguridad creado con el id: {sg_ec2_id}")
+        return sg_ec2_id
     except ec2.exceptions.ClientError as e:
         if 'InvalidGroup.Duplicate' in str(e):
             print(f"El grupo de seguridad {sg_ec2_name} ya existe")
@@ -60,6 +61,7 @@ def crear_grupo_seguridad_ec2(ec2):
                 for sg in response['SecurityGroups']:
                     sg_ec2_id = sg['GroupId']
                     print(f"    ID del grupo de seguridad: {sg_ec2_id}")
+                    return sg_ec2_id
             else:
                 print("No se encontraron grupos de seguridad con los filtros especificados.")
         else:
@@ -70,6 +72,7 @@ def crear_grupo_seguridad_db(ec2):
         response = ec2.create_security_group(GroupName=sg_db_name, Description="Grupo de seguridad para la base de datos")
         sg_db_id = response['GroupId']
         print(f"Grupo de seguridad creado con el id: {sg_db_id}")
+        return sg_db_id
     except ec2.exceptions.ClientError as e:
         if 'InvalidGroup.Duplicate' in str(e):
             print(f"El grupo de seguridad {sg_db_name} ya existe")
@@ -84,13 +87,58 @@ def crear_grupo_seguridad_db(ec2):
                 for sg in response['SecurityGroups']:
                     sg_db_id = sg['GroupId']
                     print(f"    ID del grupo de seguridad: {sg_db_id}")
+                    return sg_db_id
             else:
                 print("No se encontraron grupos de seguridad con los filtros especificados.")
+        else:
+            raise
+            
+def crear_reglas_de_seguridad(ec2, sg_ec2_id, sg_db_id):
+    try:
+        ec2.authorize_security_group_ingress(
+            GroupId=sg_ec2_id,
+            IpPermissions=[
+                {
+                    'IpProtocol': 'tcp',
+                    'FromPort': 22,
+                    'ToPort': 22,
+                    'IpRanges': [{'CidrIp': '0.0.0.0/0'}]
+                },
+                {
+                    'IpProtocol': 'tcp',
+                    'FromPort': 80,
+                    'ToPort': 80,
+                    'IpRanges': [{'CidrIp': '0.0.0.0/0'}]
+                }
+            ]
+        )
+    except ec2.exceptions.ClientError as e:
+        if 'InvalidPermission.Duplicate' in str(e):
+            print("Las reglas de seguridad de ec2 ya existen")
+        else:
+            raise
+    
+    try:
+        ec2.authorize_security_group_ingress(
+            GroupId=sg_db_id,
+            IpPermissions=[
+                {
+                    'IpProtocol': 'tcp',
+                    'FromPort': 3306,
+                    'ToPort': 3306,
+                    'UserIdGroupPairs': [{'GroupId': sg_ec2_id}]
+                }
+            ]
+        )
+    except ec2.exceptions.ClientError as e:
+        if 'InvalidPermission.Duplicate' in str(e):
+            print("Las reglas de seguridad de db ya existen")
         else:
             raise
 
 if __name__ == "__main__":
     cliente_ec2 = crear_cliente_ec2()
     crear_par_de_claves(cliente_ec2)
-    crear_grupo_seguridad_ec2(cliente_ec2)
-    crear_grupo_seguridad_db(cliente_ec2)
+    sg_ec2_id = crear_grupo_seguridad_ec2(cliente_ec2)
+    sg_db_id = crear_grupo_seguridad_db(cliente_ec2)
+    crear_reglas_de_seguridad(cliente_ec2, sg_ec2_id, sg_db_id)
