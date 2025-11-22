@@ -17,6 +17,11 @@ aws_s3_name = os.getenv('AWS_S3_NAME')
 aws_ec2_name = os.getenv('AWS_EC2_NAME')
 sg_ec2_name = os.getenv('SG_EC2_NAME')
 sg_db_name = os.getenv('SG_DB_NAME')
+db_identifier = os.getenv('DB_IDENTIFIER')
+db_instance_class = os.getenv('DB_INSTANCE_CLASS')
+db_engine = os.getenv('DB_ENGINE')
+db_username = os.getenv('DB_USER_NAME')
+db_password = os.getenv('DB_PASSWORD')
 
 def crear_cliente_ec2():
     ec2 = boto3.client(
@@ -135,6 +140,38 @@ def crear_reglas_de_seguridad(ec2, sg_ec2_id, sg_db_id):
             print("Las reglas de seguridad de db ya existen")
         else:
             raise
+        
+def crear_cliente_rds():
+    rds = boto3.client(
+        'rds',
+        aws_access_key_id=aws_access_key_id,  
+        aws_secret_access_key=aws_secret_access_key,  
+        aws_session_token=aws_session_token,  
+        region_name=aws_region  
+    )
+    return rds
+    
+def crear_base_de_datos(rds, sg_db_id):
+    try:
+        response = rds.create_db_instance(
+            DBInstanceIdentifier=db_identifier,
+            AllocatedStorage=20,
+            DBInstanceClass=db_instance_class,
+            Engine=db_engine,
+            MasterUsername=db_username,
+            MasterUserPassword=db_password,
+            VpcSecurityGroupIds=[sg_db_id]
+        )
+        print("Instancia RDS creada")
+        print("Esperando que quede disponible ...")
+        waiter = rds.get_waiter('db_instance_available')
+        waiter.wait(DBInstanceIdentifier=db_identifier)
+        print("Ahora la db ya está pronta")
+    except rds.exceptions.ClientError as e:
+        if 'DBInstanceAlreadyExists' in str(e):
+            print("La instancia de base de datos ya existe")
+        else:
+            raise
 
 if __name__ == "__main__":
     cliente_ec2 = crear_cliente_ec2()
@@ -142,3 +179,5 @@ if __name__ == "__main__":
     sg_ec2_id = crear_grupo_seguridad_ec2(cliente_ec2)
     sg_db_id = crear_grupo_seguridad_db(cliente_ec2)
     crear_reglas_de_seguridad(cliente_ec2, sg_ec2_id, sg_db_id)
+    cliente_rds = crear_cliente_rds()
+    crear_base_de_datos(cliente_rds, sg_db_id)
