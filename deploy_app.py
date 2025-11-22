@@ -15,6 +15,7 @@ aws_image_id = os.getenv('AWS_IMAGE_ID')
 aws_instance_type = os.getenv('AWS_INSTANCE_TYPE', 't2.micro')
 aws_s3_name = os.getenv('AWS_S3_NAME')
 aws_ec2_name = os.getenv('AWS_EC2_NAME')
+sg_ec2_name = os.getenv('SG_EC2_NAME')
 
 def crear_cliente_ec2():
     ec2 = boto3.client(
@@ -38,7 +39,32 @@ def crear_par_de_claves(ec2):
             print(f"La clave {key_name} ya existe")
         else:
             raise
+            
+def crear_grupo_seguridad(ec2):
+    try:
+        response = ec2.create_security_group(GroupName=sg_ec2_name, Description="Grupo de seguridad para mi ec2")
+        sg_ec2_id = response['GroupId']
+        print(f"Grupo de seguridad creado con el id: {sg_ec2_id}")
+    except ec2.exceptions.ClientError as e:
+        if 'InvalidGroup.Duplicate' in str(e):
+            print(f"El grupo de seguridad {sg_ec2_name} ya existe")
+            response = ec2.describe_security_groups(
+                          Filters=[
+                            {
+                              'Name': 'group-name',
+                              'Values': [sg_ec2_name]
+                            }
+                          ])
+            if response['SecurityGroups']:
+                for sg in response['SecurityGroups']:
+                    sg_ec2_id = sg['GroupId']
+                    print(f"ID del grupo de seguridad: {sg_ec2_id}")
+            else:
+                print("No se encontraron grupos de seguridad con los filtros especificados.")
+        else:
+            raise
     
 if __name__ == "__main__":
     cliente_ec2 = crear_cliente_ec2()
     crear_par_de_claves(cliente_ec2)
+    crear_grupo_seguridad(cliente_ec2)
