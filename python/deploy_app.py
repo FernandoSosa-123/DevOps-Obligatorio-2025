@@ -3,10 +3,9 @@ import boto3
 
 from dotenv import load_dotenv
 
-# Cargar las variables una vez al inicio del módulo
+# Cargar las variables del archivo .env y creo variables globales
 load_dotenv()
 
-# Definir variables globales
 key_name = os.getenv('KEY_NAME')
 aws_access_key_id = os.getenv('AWS_ACCESS_KEY_ID')
 aws_secret_access_key = os.getenv('AWS_SECRET_ACCESS_KEY')
@@ -27,6 +26,7 @@ db_name = os.getenv('DB_NAME')
 app_user = os.getenv('APP_USER')
 app_pass = os.getenv('APP_PASS')
 
+# Crea y devuelve un cliente EC2 autenticado con las credenciales del .env
 def crear_cliente_ec2():
     ec2 = boto3.client(
         'ec2',
@@ -36,20 +36,22 @@ def crear_cliente_ec2():
         region_name=aws_region  
     )
     return ec2
-    
+
+# Crea el key pair en AWS y evita duplicados, ademas almacena el .pem localmente
 def crear_par_de_claves(ec2):
     try:
         key_pair = ec2.create_key_pair(KeyName=key_name)
         with open(f'{key_name}.pem', 'w') as file:
             file.write(key_pair['KeyMaterial'])
-        os.chmod(f'{key_name}.pem', 0o400)
+            os.chmod(f'{key_name}.pem', 0o400)
         print(f"Par de claves creado y guardado como {key_name}.pem")
     except ec2.exceptions.ClientError as e:
         if 'InvalidKeyPair.Duplicate' in str(e):
             print(f"La clave {key_name} ya existe")
         else:
             raise
-            
+
+# Crea el Security Group para EC2, si existe obtiene su ID   
 def crear_grupo_seguridad_ec2(ec2):
     try:
         response = ec2.create_security_group(GroupName=sg_ec2_name, Description="Grupo de seguridad para mi ec2")
@@ -75,7 +77,8 @@ def crear_grupo_seguridad_ec2(ec2):
                 print("No se encontraron grupos de seguridad con los filtros especificados.")
         else:
             raise
-    
+
+# Gestiona el Security Group de la base de datos (crea o reutiliza el existente)
 def crear_grupo_seguridad_db(ec2):
     try:
         response = ec2.create_security_group(GroupName=sg_db_name, Description="Grupo de seguridad para la base de datos")
@@ -101,8 +104,9 @@ def crear_grupo_seguridad_db(ec2):
                 print("No se encontraron grupos de seguridad con los filtros especificados.")
         else:
             raise
-            
-def crear_reglas_de_seguridad(ec2, sg_ec2_id, sg_db_id):
+
+# Abre puertos (22/80) en EC2 y permite a EC2 acceder a DB (3306)
+def crear_reglas_de_seguridad(ec2, sg_ec2_id, sg_db_id):    #Crea reglas para los grupos y comprueba si existen
     try:
         ec2.authorize_security_group_ingress(
             GroupId=sg_ec2_id,
@@ -144,7 +148,8 @@ def crear_reglas_de_seguridad(ec2, sg_ec2_id, sg_db_id):
             print("Las reglas de seguridad de db ya existen")
         else:
             raise
-        
+
+# Crea cliente RDS para administrar instancias de base de datos
 def crear_cliente_rds():
     rds = boto3.client(
         'rds',
@@ -154,7 +159,8 @@ def crear_cliente_rds():
         region_name=aws_region  
     )
     return rds
-    
+
+# Consulta RDS y devuelve el endpoint público de la DB
 def obtener_endpoint_rds(rds):
     """Obtener el endpoint de la base de datos RDS"""
     try:
@@ -164,7 +170,8 @@ def obtener_endpoint_rds(rds):
     except Exception as e:
         print(f"Error obteniendo endpoint de RDS: {e}")
         return None
-    
+
+# Crea la instancia RDS o usa la existente y devuelve su endpoint
 def crear_base_de_datos(rds, sg_db_id):
     try:
         response = rds.create_db_instance(
@@ -196,7 +203,8 @@ def crear_base_de_datos(rds, sg_db_id):
             return None
         else:
             raise
-            
+
+# Crea y devuelve un cliente S3 con credenciales AWS     
 def crear_cliente_s3():
     s3_client = boto3.client(
         's3',
@@ -206,7 +214,8 @@ def crear_cliente_s3():
         region_name=aws_region
     )
     return s3_client
-    
+
+# Sube archivos de la app al bucket S3, omitiendo existentes
 def subir_app_a_s3(s3_client):
     try:
         s3_client.create_bucket(Bucket=aws_s3_name)
@@ -235,6 +244,7 @@ def subir_app_a_s3(s3_client):
         else:
             print(f"    {archivo} no existe, omitiendo")
             
+# Crea un cliente EC2 tipo resource para manipular instancias
 def crear_cliente_ec2_resource():
     ec2_resource = boto3.resource(
         'ec2',
@@ -245,8 +255,70 @@ def crear_cliente_ec2_resource():
     )
     return ec2_resource
             
+# crear o reutilizar una instancia EC2 en AWS y preparar la aplicación web para que quede disponible
 def crear_instancia_ec2(ec2_resource, sg_ec2_id, db_endpoint):
-    user_data_script = f"""#!/bin/bash
+
+    user_data_script = generar_user_data(db_endpoint)    # Genera el script de Bash al inicializar la instancia
+
+
+    existing_instances = list(ec2_resource.instances.filter(
+        Filters=[
+            {'Name': 'tag:Name', 'Values': [aws_ec2_name]},
+            {'Name': 'instance-state-name', 'Values': ['running', 'stopped', 'pending']}
+        ]
+    ))
+    
+    if existing_instances:
+        instance = existing_instances[0]     
+        instance_id = instance.id            
+
+        print(f"La instancia EC2 '{aws_ec2_name}' ya existe con ID: {instance_id}")
+
+        instance.reload()                   
+        ip_publica = instance.public_ip_address  
+
+        print(f"App disponible en http://{ip_publica}/login.php")
+
+        return instance_id
+        
+    try:
+        instances = ec2_resource.create_instances(
+            ImageId=aws_image_id,
+            MinCount=1,
+            MaxCount=1,
+            InstanceType=aws_instance_type, 
+            KeyName=key_name,
+            SecurityGroupIds=[sg_ec2_id],
+            UserData=user_data_script,
+            TagSpecifications=[
+                {
+                    'ResourceType': 'instance',
+                    'Tags': [{'Key': 'Name', 'Value': aws_ec2_name}]
+                }
+            ]
+        )
+        instance_id = instances[0].id
+        print("Instancia creada con ID:", instance_id)
+        print("    Esperando a que inicie instancia")
+        instance = instances[0]
+        instance.wait_until_running()
+        instance.reload()
+        
+        # Esperar hasta obtener IP pública
+        while instance.public_ip_address is None:
+            time.sleep(3)
+            instance.reload()
+
+        ip_publica = instance.public_ip_address
+        print(f"Desplegando app en: http://{ip_publica}/login.php")
+        return instance_id
+    except Exception as e:
+        print(f"Error creando instancia EC2: {e}")
+        raise
+
+# Genera el script de Bash al inicializar la instancia
+def generar_user_data(db_endpoint):  
+    return f"""#!/bin/bash
 
 export AWS_ACCESS_KEY_ID={aws_access_key_id}
 export AWS_SECRET_ACCESS_KEY={aws_secret_access_key}
@@ -296,64 +368,7 @@ sudo chmod -R 755 /var/www/html
 
 # Reiniciar servicios para aplicar cambios
 sudo systemctl restart httpd php-fpm
-
 """
-
-    existing_instances = list(ec2_resource.instances.filter(
-        Filters=[
-            {'Name': 'tag:Name', 'Values': [aws_ec2_name]},
-            {'Name': 'instance-state-name', 'Values': ['running', 'stopped', 'pending']}
-        ]
-    ))
-    
-    if existing_instances:
-        instance = existing_instances[0]     # ← OBJETO REAL
-        instance_id = instance.id            
-
-        print(f"La instancia EC2 '{aws_ec2_name}' ya existe con ID: {instance_id}")
-
-        instance.reload()                   
-        ip_publica = instance.public_ip_address  
-
-        print(f"App disponible en http://{ip_publica}/login.php")
-
-        return instance_id
-        
-    try:
-        instances = ec2_resource.create_instances(
-            ImageId=aws_image_id,
-            MinCount=1,
-            MaxCount=1,
-            InstanceType=aws_instance_type, 
-            KeyName=key_name,
-            SecurityGroupIds=[sg_ec2_id],
-            UserData=user_data_script,
-            TagSpecifications=[
-                {
-                    'ResourceType': 'instance',
-                    'Tags': [{'Key': 'Name', 'Value': aws_ec2_name}]
-                }
-            ]
-        )
-        instance_id = instances[0].id
-        print("Instancia creada con ID:", instance_id)
-        print("    Esperando a que inicie instancia")
-        instance = instances[0]
-        instance.wait_until_running()
-        instance.reload()
-        
-        # Esperar hasta obtener IP pública
-        while instance.public_ip_address is None:
-            time.sleep(3)
-            instance.reload()
-
-        ip_publica = instance.public_ip_address
-        print(f"Desplegando app. Esperar un instante e ingresar a http://{ip_publica}/login.php")
-        return instance_id
-    except Exception as e:
-        print(f"Error creando instancia EC2: {e}")
-        raise
-
 
 if __name__ == "__main__":
     cliente_ec2 = crear_cliente_ec2()
