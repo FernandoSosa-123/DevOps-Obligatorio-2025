@@ -1,3 +1,8 @@
+# ---------------------------------------------------------------
+# Descripción: Este script automatiza el despliegue completo de una aplicación web en AWS
+# Autor: Guillermo Larrea, Fernando Sosa y ChatGPT (GPT-5)
+# ---------------------------------------------------------------
+
 import os
 import boto3
 
