@@ -223,10 +223,49 @@ def crear_cliente_ec2_resource():
     return ec2_resource
             
 def crear_instancia_ec2(ec2_resource, sg_ec2_id):
+    user_data_script = f"""#!/bin/bash
+
+export AWS_ACCESS_KEY_ID={aws_access_key_id}
+export AWS_SECRET_ACCESS_KEY={aws_secret_access_key}
+export AWS_SESSION_TOKEN={aws_session_token}
+export AWS_REGION={aws_region}
+export S3_BUCKET={aws_s3_name}
+
+sudo dnf clean all
+sudo dnf makecache
+sudo dnf -y update
+
+sudo dnf -y install httpd php php-cli php-fpm php-common php-mysqlnd mariadb105 mariadb105-server-utils.x86_64 nginx nodejs
+
+sudo systemctl enable --now httpd
+sudo systemctl enable --now php-fpm
+
+sudo systemctl restart httpd php-fpm
+
+aws s3 cp s3://{aws_s3_name}/ /var/www/html --recursive
+mv /var/www/html/init_db.sql /var/www
+
+----------------
+
+#chown -R nginx:nginx /var/www
+#chmod -R 755 /var/www
+
+# cp /var/www/nginx-config /etc/nginx/conf.d/default.conf
+
+#systemctl start nginx
+#systemctl enable nginx
+
+# Configurar la aplicación con la base de datos
+# Esto depende de cómo esté estructurada tu aplicación
+# Puedes modificar archivos de configuración aquí si es necesario
+
+
+"""
+
     existing_instances = list(ec2_resource.instances.filter(
         Filters=[
             {'Name': 'tag:Name', 'Values': [aws_ec2_name]},
-            {'Name': 'instance-state-name', 'Values': ['running', 'stopped']}
+            {'Name': 'instance-state-name', 'Values': ['running', 'stopped', 'pending']}
         ]
     ))
     
@@ -234,6 +273,7 @@ def crear_instancia_ec2(ec2_resource, sg_ec2_id):
         instance_id = existing_instances[0].id
         print(f"La instancia EC2 '{aws_ec2_name}' ya existe con ID: {instance_id}")
         return instance_id
+        
     try:
         instances = ec2_resource.create_instances(
             ImageId=aws_image_id,
@@ -242,6 +282,7 @@ def crear_instancia_ec2(ec2_resource, sg_ec2_id):
             InstanceType=aws_instance_type, 
             KeyName=key_name,
             SecurityGroupIds=[sg_ec2_id],
+            UserData=user_data_script,
             TagSpecifications=[
                 {
                     'ResourceType': 'instance',
@@ -251,10 +292,14 @@ def crear_instancia_ec2(ec2_resource, sg_ec2_id):
         )
         instance_id = instances[0].id
         print("Instancia creada con ID:", instance_id)
+        print("Esperando a que inicie instancia")
+        instance = instances[0]
+        instance.wait_until_running()
         return instance_id
     except Exception as e:
         print(f"Error creando instancia EC2: {e}")
         raise
+
 
 if __name__ == "__main__":
     cliente_ec2 = crear_cliente_ec2()
