@@ -277,13 +277,13 @@ mysql -h {db_endpoint} -u {db_username} -p{db_password} < /var/www/init_db.sql
 
 # Crear archivo .env con la configuración
 tee /var/www/.env > /dev/null <<EOF
-DB_HOST=${db_endpoint}
-DB_NAME=${db_name}
-DB_USER=${db_username}
-DB_PASS=${db_password}
+DB_HOST={db_endpoint}
+DB_NAME={db_name}
+DB_USER={db_username}
+DB_PASS={db_password}
 
-APP_USER=${app_user}
-APP_PASS=${app_pass}
+APP_USER={app_user}
+APP_PASS={app_pass}
 EOF
 
 # Configurar permisos seguros
@@ -307,8 +307,16 @@ sudo systemctl restart httpd php-fpm
     ))
     
     if existing_instances:
-        instance_id = existing_instances[0].id
+        instance = existing_instances[0]     # ← OBJETO REAL
+        instance_id = instance.id            
+
         print(f"La instancia EC2 '{aws_ec2_name}' ya existe con ID: {instance_id}")
+
+        instance.reload()                   
+        ip_publica = instance.public_ip_address  
+
+        print(f"App disponible en http://{ip_publica}/login.php")
+
         return instance_id
         
     try:
@@ -329,9 +337,18 @@ sudo systemctl restart httpd php-fpm
         )
         instance_id = instances[0].id
         print("Instancia creada con ID:", instance_id)
-        print("Esperando a que inicie instancia")
+        print("    Esperando a que inicie instancia")
         instance = instances[0]
         instance.wait_until_running()
+        instance.reload()
+        
+        # Esperar hasta obtener IP pública
+        while instance.public_ip_address is None:
+            time.sleep(3)
+            instance.reload()
+
+        ip_publica = instance.public_ip_address
+        print(f"Desplegando app. Esperar un instante e ingresar a http://{ip_publica}/login.php")
         return instance_id
     except Exception as e:
         print(f"Error creando instancia EC2: {e}")
