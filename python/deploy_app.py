@@ -23,6 +23,7 @@ db_instance_class = os.getenv('DB_INSTANCE_CLASS')
 db_engine = os.getenv('DB_ENGINE')
 db_username = os.getenv('DB_USER_NAME')
 db_password = os.getenv('DB_PASSWORD')
+db_name = os.getenv('DB_NAME', 'demo_db')
 
 def crear_cliente_ec2():
     ec2 = boto3.client(
@@ -152,6 +153,16 @@ def crear_cliente_rds():
     )
     return rds
     
+def obtener_endpoint_rds(rds):
+    """Obtener el endpoint de la base de datos RDS"""
+    try:
+        response = rds.describe_db_instances(DBInstanceIdentifier=db_identifier)
+        db_instance = response['DBInstances'][0]
+        return db_instance['Endpoint']['Address']
+    except Exception as e:
+        print(f"Error obteniendo endpoint de RDS: {e}")
+        return None
+    
 def crear_base_de_datos(rds, sg_db_id):
     try:
         response = rds.create_db_instance(
@@ -168,9 +179,19 @@ def crear_base_de_datos(rds, sg_db_id):
         waiter = rds.get_waiter('db_instance_available')
         waiter.wait(DBInstanceIdentifier=db_identifier)
         print("Ahora la db ya está pronta")
+        endpoint = obtener_endpoint_rds(rds)
+        if endpoint:
+            print(f"Endpoint de la base de datos: {endpoint}")
+            return endpoint
+        return None
     except rds.exceptions.ClientError as e:
         if 'DBInstanceAlreadyExists' in str(e):
             print("La instancia de base de datos ya existe")
+            endpoint = obtener_endpoint_rds(rds)
+            if endpoint:
+                print(f"Endpoint de la base de datos existente: {endpoint}")
+                return endpoint
+            return None
         else:
             raise
             
@@ -222,7 +243,7 @@ def crear_cliente_ec2_resource():
     )
     return ec2_resource
             
-def crear_instancia_ec2(ec2_resource, sg_ec2_id):
+def crear_instancia_ec2(ec2_resource, sg_ec2_id, db_endpoint):
     user_data_script = f"""#!/bin/bash
 
 export AWS_ACCESS_KEY_ID={aws_access_key_id}
@@ -231,19 +252,45 @@ export AWS_SESSION_TOKEN={aws_session_token}
 export AWS_REGION={aws_region}
 export S3_BUCKET={aws_s3_name}
 
+#actualiza sistema e instala paquetes
 sudo dnf clean all
 sudo dnf makecache
 sudo dnf -y update
-
 sudo dnf -y install httpd php php-cli php-fpm php-common php-mysqlnd mariadb105 mariadb105-server-utils.x86_64 nginx nodejs
 
+#configura e inicia servicios
 sudo systemctl enable --now httpd
 sudo systemctl enable --now php-fpm
-
 sudo systemctl restart httpd php-fpm
 
+#copia aplicacion desde el s3
 aws s3 cp s3://{aws_s3_name}/ /var/www/html --recursive
 mv /var/www/html/init_db.sql /var/www
+
+# Importar base de datos a RDS
+mysql -h {db_endpoint} -u {db_username} -p{db_password} < /var/www/init_db.sql
+
+# Crear archivo .env con la configuración
+#sudo tee /var/www/.env >/dev/null <<ENV
+#DB_HOST={db_endpoint}
+#DB_NAME={db_name}
+#DB_USER={db_username}
+#DB_PASS={db_password}
+
+#APP_USER=admin
+#APP_PASS=password123
+#ENV
+
+# Configurar permisos de seguridad para el archivo .env
+sudo chown apache:apache /var/www/.env
+sudo chmod 600 /var/www/.env
+
+# Configurar permisos generales
+sudo chown -R apache:apache /var/www/html
+sudo chmod -R 755 /var/www/html
+
+# Reiniciar servicios para aplicar cambios
+sudo systemctl restart httpd php-fpm
 
 ----------------
 
@@ -308,8 +355,8 @@ if __name__ == "__main__":
     sg_db_id = crear_grupo_seguridad_db(cliente_ec2)
     crear_reglas_de_seguridad(cliente_ec2, sg_ec2_id, sg_db_id)
     cliente_rds = crear_cliente_rds()
-    crear_base_de_datos(cliente_rds, sg_db_id)
+    db_endpoint = crear_base_de_datos(cliente_rds, sg_db_id)
     cliente_s3 = crear_cliente_s3()
     subir_app_a_s3(cliente_s3)
     ec2_resource = crear_cliente_ec2_resource()
-    instance_id = crear_instancia_ec2(ec2_resource, sg_ec2_id)
+    instance_id = crear_instancia_ec2(ec2_resource, sg_ec2_id, db_endpoint)
