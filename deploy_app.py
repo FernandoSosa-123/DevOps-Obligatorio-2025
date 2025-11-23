@@ -1,5 +1,6 @@
 import os
 import boto3
+
 from dotenv import load_dotenv
 
 # Cargar las variables una vez al inicio del módulo
@@ -173,6 +174,44 @@ def crear_base_de_datos(rds, sg_db_id):
         else:
             raise
             
+def crear_cliente_s3():
+    s3_client = boto3.client(
+        's3',
+        aws_access_key_id=aws_access_key_id,
+        aws_secret_access_key=aws_secret_access_key,
+        aws_session_token=aws_session_token,
+        region_name=aws_region
+    )
+    return s3_client
+    
+def subir_app_a_s3(s3_client):
+    try:
+        s3_client.create_bucket(Bucket=aws_s3_name)
+        print(f"Bucket {aws_s3_name} creado")
+    except (s3_client.exceptions.BucketAlreadyExists, 
+            s3_client.exceptions.BucketAlreadyOwnedByYou):
+        print(f"El bucket {aws_s3_name} ya existe")
+        
+    archivos_a_incluir = [
+        'app.css', 'app.js', 'config.php', 'index.html',
+        'index.php', 'init_db.sql', 'login.css', 'login.html',
+        'login.js', 'login.php'
+    ]
+    
+    for archivo in archivos_a_incluir:
+        if os.path.exists(archivo):
+            try:
+                s3_client.head_object(Bucket=aws_s3_name, Key=archivo)
+                print(f"    {archivo} ya existe en S3, omitiendo")
+                continue
+            except:
+                pass  # El archivo no existe, proceder a subirlo
+                
+            s3_client.upload_file(archivo, aws_s3_name, archivo)
+            print(f"    {archivo} subido a S3")
+        else:
+            print(f"    {archivo} no existe, omitiendo")
+            
 def crear_cliente_ec2_resource():
     ec2_resource = boto3.resource(
         'ec2',
@@ -225,5 +264,7 @@ if __name__ == "__main__":
     crear_reglas_de_seguridad(cliente_ec2, sg_ec2_id, sg_db_id)
     cliente_rds = crear_cliente_rds()
     crear_base_de_datos(cliente_rds, sg_db_id)
+    cliente_s3 = crear_cliente_s3()
+    subir_app_a_s3(cliente_s3)
     ec2_resource = crear_cliente_ec2_resource()
     instance_id = crear_instancia_ec2(ec2_resource, sg_ec2_id)
