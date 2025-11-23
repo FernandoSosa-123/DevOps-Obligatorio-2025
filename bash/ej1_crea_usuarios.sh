@@ -79,13 +79,13 @@ total_ok=0
 while IFS=":" read -r usuario comentario dir_home crear_home shell_def; do
     #Cheque con el usuario exite como variable y si no existe con "continue" se omite los comandos restantes dentro del bucle 
 	#para la iteración actual y pasa al siguiente iteración del bucle.
-    [ -z "$usuario" ] && echo "ATENCION: usuario sin valor NO pudo ser creado" && continue
+    [ -z "$usuario" ] && echo "ATENCION: usuario sin valor NO pudo ser creado" && echo "" && continue
 	
 	#convertimos a "crear_home" en minuscula si o si, para poder comprobar en cualquier caso que alla un "no"
     prueba_de_home="${crear_home,,}"
 
     #Similar al caso anterior utilizo un "test" verificando si el valor de crear_home es un "no" y si lo es saltamos los comandos restantes y se pasa de bucle 
-    [ ! -d "$dir_home" ] && [ "$prueba_de_home" = "no" ] && echo "ATENCION: el usuario $usuario no pudo ser creado" && echo "" && continue	
+    [ ! -d "$dir_home" ] && [ "$prueba_de_home" = "no" ] && echo "ATENCION: el usuario $usuario no pudo ser creado, el directorio: $dir_home no existe" && echo "" && continue	
 	
     #Verifco los valores de las variables, si estos estan vacios los cambio con ":-" por "valor por defecto"
     comentario=${comentario:-"<valor por defecto>"}
