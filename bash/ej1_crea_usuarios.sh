@@ -35,3 +35,17 @@ while getopts ":ic:" opcion; do
 		;;
     esac
 done
+
+
+#getopts solo procesa opciones y sus argumentos, sin tomar en cuenta argumentos posicionales (argumentos sin - o --)
+#Esto puede generar error si los usuarios introducen argumentos extra
+#Esto se solucionara con el comando "shift" y la variable de "getopts" "OPTIND", que mueve los modificadores dado por el usario
+shift $((OPTIND - 1))
+
+#Verificar que se recibió un archivo
+if [ $# -ne 1 ]; then
+    echo "Error de uso, falta el archivo de usuarios" >&2
+    mostrar_uso
+fi
+
+archivo_usuarios="$1"
