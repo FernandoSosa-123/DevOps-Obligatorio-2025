@@ -23,7 +23,9 @@ db_instance_class = os.getenv('DB_INSTANCE_CLASS')
 db_engine = os.getenv('DB_ENGINE')
 db_username = os.getenv('DB_USER_NAME')
 db_password = os.getenv('DB_PASSWORD')
-db_name = os.getenv('DB_NAME', 'demo_db')
+db_name = os.getenv('DB_NAME')
+app_user = os.getenv('APP_USER')
+app_pass = os.getenv('APP_PASS')
 
 def crear_cliente_ec2():
     ec2 = boto3.client(
@@ -256,7 +258,7 @@ export S3_BUCKET={aws_s3_name}
 sudo dnf clean all
 sudo dnf makecache
 sudo dnf -y update
-sudo dnf -y install httpd php php-cli php-fpm php-common php-mysqlnd mariadb105 mariadb105-server-utils.x86_64 nginx nodejs
+sudo dnf -y install httpd php php-cli php-fpm php-common php-mysqlnd mariadb105 mariadb105-server-utils.x86_64
 
 #configura e inicia servicios
 sudo systemctl enable --now httpd
@@ -267,21 +269,24 @@ sudo systemctl restart httpd php-fpm
 aws s3 cp s3://{aws_s3_name}/ /var/www/html --recursive
 mv /var/www/html/init_db.sql /var/www
 
+#Archivo de prueba
+echo "<?php phpinfo(); ?>" | sudo tee /var/www/html/info.php
+
 # Importar base de datos a RDS
 mysql -h {db_endpoint} -u {db_username} -p{db_password} < /var/www/init_db.sql
 
 # Crear archivo .env con la configuración
-#sudo tee /var/www/.env >/dev/null <<ENV
-#DB_HOST={db_endpoint}
-#DB_NAME={db_name}
-#DB_USER={db_username}
-#DB_PASS={db_password}
+tee /var/www/.env > /dev/null <<EOF
+DB_HOST=${db_endpoint}
+DB_NAME=${db_name}
+DB_USER=${db_username}
+DB_PASS=${db_password}
 
-#APP_USER=admin
-#APP_PASS=password123
-#ENV
+APP_USER=${app_user}
+APP_PASS=${app_pass}
+EOF
 
-# Configurar permisos de seguridad para el archivo .env
+# Configurar permisos seguros
 sudo chown apache:apache /var/www/.env
 sudo chmod 600 /var/www/.env
 
@@ -291,21 +296,6 @@ sudo chmod -R 755 /var/www/html
 
 # Reiniciar servicios para aplicar cambios
 sudo systemctl restart httpd php-fpm
-
-----------------
-
-#chown -R nginx:nginx /var/www
-#chmod -R 755 /var/www
-
-# cp /var/www/nginx-config /etc/nginx/conf.d/default.conf
-
-#systemctl start nginx
-#systemctl enable nginx
-
-# Configurar la aplicación con la base de datos
-# Esto depende de cómo esté estructurada tu aplicación
-# Puedes modificar archivos de configuración aquí si es necesario
-
 
 """
 
