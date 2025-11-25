@@ -64,6 +64,10 @@ deactivate
 ### Activar tu entorno virtual
 source .venv/bin/activate
 
-### Instalar desde requirements.txt
+### Opcion 1: Instalar desde requirements.txt
 pip install -r requirements.txt
 
+### Opcion 2 Instalar manualmente
+pip install boto3
+
+pip install dotenv
