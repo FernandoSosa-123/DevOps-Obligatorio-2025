@@ -51,6 +51,14 @@ git checkout feature/mirama
 git merge main
 
 git push
+### Merge Main con la rama
+git checkout main
+
+git pull
+
+git merge feature/mirama
+
+git push origin main
 ## Archivos importantes github
 .gitignore: Archivos que Git ignorará
 
