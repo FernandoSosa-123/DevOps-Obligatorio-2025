@@ -14,6 +14,7 @@ error_perm=3
 desplegar_info=0
 contrase=""
 archivo_usuarios=""
+comprobacion_usuario=0
 
 #Funcion que señala error de uso y muestra su correcto funcionamiento
 mostrar_uso() {
@@ -80,6 +81,16 @@ while IFS=":" read -r usuario comentario dir_home crear_home shell_def; do
     #Cheque con el usuario exite como variable y si no existe con "continue" se omite los comandos restantes dentro del bucle 
 	#para la iteración actual y pasa al siguiente iteración del bucle.
     [ -z "$usuario" ] && echo "ATENCION: usuario sin valor NO pudo ser creado" && echo "" && continue
+	
+	#Comprobamos si ya existe un usario creado con un "grep" silencioso, esto lo comprobamos con un "for" para usar el comando "continue" para el while
+	if grep -q "^${usuario}:" /etc/passwd; then
+		comprobacion_usuario=1
+	else
+		comprobacion_usuario=0
+	fi
+	
+	#Si existe un usuario, de una manera simiar nos saltaimos el bucle e informamos de esto
+	[ "$comprobacion_usuario" -eq 1 ] && echo "ATENCION: usuario ya existe" && echo "" && continue	
 	
 	#convertimos a "crear_home" en minuscula si o si, para poder comprobar en cualquier caso que alla un "no"
     prueba_de_home="${crear_home,,}"
