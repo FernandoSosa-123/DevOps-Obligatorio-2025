@@ -17,6 +17,18 @@ ssh -T git@github.com
 ### Clonar repositorio git
 git clone git@github.com:FernandoSosa-123/DevOps-Obligatorio-2025.git
 
+## Creacion y seleccion de rama
+### Creacion de nueva rama
+git checkout -b feature/mirama
+
+### subir rama por primera vez
+git add .
+
+git commit -m"Descripcion de cambios"
+
+git push --set-upstram origin feature/mirama
+
+en github abrir pull request y aprobar marge main
 ## Flujo de trabajo diario github
 ### Hacer cambios en archivos...
 git add . (todos los archivos) //
@@ -27,9 +39,18 @@ git status (verifica los cambios a subir)
 git commit -m "Descripción de los cambios"
 
 git push 
-### Sincronizar con main
+### Flujo con actualizacion
+git checkout main
+
+git fetch
+
 git pull
 
+git checkout feature/mirama
+
+git merge main
+
+git push
 ## Archivos importantes github
 .gitignore: Archivos que Git ignorará
 
