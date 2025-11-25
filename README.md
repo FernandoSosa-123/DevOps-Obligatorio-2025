@@ -28,18 +28,23 @@ git commit -m"Descripcion de cambios"
 
 git push --set-upstram origin feature/mirama
 
-en github abrir pull request y aprobar marge main
+en github abrir pull request y aprobar el merge main
 ## Flujo de trabajo diario github
 ### Hacer cambios en archivos...
-git add . (todos los archivos) //
+git checkout feature/mirama
+
+git add . (todos los archivos)
+
 git add nombre_archivo (un solo archivo)
 
 git status (verifica los cambios a subir)
 
 git commit -m "Descripción de los cambios"
 
-git push 
-### Flujo con actualizacion
+git push
+
+en github abrir pull request y aprobar el merge main 
+### Flujo copiar main a mi rama y subir rama
 git checkout main
 
 git fetch
@@ -51,14 +56,14 @@ git checkout feature/mirama
 git merge main
 
 git push
-### Merge Main con la rama
+### Flujo copiar mi rama a la main
 git checkout main
 
 git pull
 
 git merge feature/mirama
 
-git push origin main
+git push
 ## Archivos importantes github
 .gitignore: Archivos que Git ignorará
 
