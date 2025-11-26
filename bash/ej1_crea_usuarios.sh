@@ -131,7 +131,7 @@ while IFS=":" read -r usuario comentario dir_home crear_home shell_def; do
             echo "$usuario:$contrase" | chpasswd 2>/dev/null
         fi
 
-        if [ $desplegar_info -eq 1 ]; 
+        if [ $desplegar_info -eq 1 ]; then 
 		    #Desplegamos la informacion de creacion del usuario
             echo "Usuario $usuario creado con éxito con datos indicados:"
             echo "Comentario: $comentario"
