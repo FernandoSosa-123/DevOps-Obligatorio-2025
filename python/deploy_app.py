@@ -5,6 +5,7 @@
 
 import os
 import boto3
+import time
 
 from dotenv import load_dotenv
 
@@ -47,7 +48,7 @@ def crear_par_de_claves(ec2):
     try:
         key_pair = ec2.create_key_pair(KeyName=key_name)              #crea el key pair en aws
         with open(f'{key_name}.pem', 'w') as file:                    #guarda el .pem localmente
-            file.write(key_pair['KeyMaterial'])                       
+            file.write(key_pair['KeyMaterial'])
             os.chmod(f'{key_name}.pem', 0o400)                        #asigna permisos solo lectura
         print(f"Par de claves creado y guardado como {key_name}.pem")
     except ec2.exceptions.ClientError as e:
@@ -56,12 +57,12 @@ def crear_par_de_claves(ec2):
         else:
             raise
 
-# Crea el Security Group para EC2, si existe obtiene su ID   
+# Crea el Security Group para EC2, si existe obtiene su ID
 def crear_grupo_seguridad_ec2(ec2):
     try:
-        response = ec2.create_security_group(GroupName=sg_ec2_name, Description="Grupo de seguridad para mi ec2")                                                               #crea el SG en aws
+        response = ec2.create_security_group(GroupName=sg_ec2_name, Description="Grupo de seguridad para mi ec2")
         sg_ec2_id = response['GroupId']                             #Obtengo el ID del sg
-        print(f"Grupo de seguridad creado con el id: {sg_ec2_id}")  
+        print(f"Grupo de seguridad EC2 creado con el id: {sg_ec2_id}")
         return sg_ec2_id                                            #devuelvo el ID del sg
     except ec2.exceptions.ClientError as e:
         if 'InvalidGroup.Duplicate' in str(e):                      #si ya existe el grupo
@@ -86,13 +87,13 @@ def crear_grupo_seguridad_ec2(ec2):
 # Gestiona el Security Group de la base de datos (crea o reutiliza el existente)
 def crear_grupo_seguridad_db(ec2):
     try:
-        response = ec2.create_security_group(GroupName=sg_db_name, Description="Grupo de seguridad para la base de datos")                                                   #Crea la SG para la base de datos
+        response = ec2.create_security_group(GroupName=sg_db_name, Description="Grupo de seguridad para la base de datos")
         sg_db_id = response['GroupId']                            #Obtengo el ID del SG creado
-        print(f"Grupo de seguridad creado con el id: {sg_db_id}")
+        print(f"Grupo de seguridad DB creado con el id: {sg_db_id}")
         return sg_db_id                                           #Devuelvo el ID
     except ec2.exceptions.ClientError as e:
         if 'InvalidGroup.Duplicate' in str(e):                    #Si el SG ya existe
-            print(f"El grupo de seguridad {sg_db_name} ya existe")
+            print(f"El grupo de seguridad de db {sg_db_name} ya existe")
             response = ec2.describe_security_groups(
                 Filters=[                                         #Busco el SG existente
                     {
@@ -135,7 +136,7 @@ def crear_reglas_de_seguridad(ec2, sg_ec2_id, sg_db_id):    #Crea reglas para lo
             print("Las reglas de seguridad de ec2 ya existen")
         else:
             raise
-    
+
     try:
         ec2.authorize_security_group_ingress(
             GroupId=sg_db_id,                               #En el SG de la DB agrego regla
@@ -158,10 +159,10 @@ def crear_reglas_de_seguridad(ec2, sg_ec2_id, sg_db_id):    #Crea reglas para lo
 def crear_cliente_rds():
     rds = boto3.client(
         'rds',                                       #Servicio RDS
-        aws_access_key_id=aws_access_key_id,  
-        aws_secret_access_key=aws_secret_access_key,  
-        aws_session_token=aws_session_token,  
-        region_name=aws_region  
+        aws_access_key_id=aws_access_key_id,
+        aws_secret_access_key=aws_secret_access_key,
+        aws_session_token=aws_session_token,
+        region_name=aws_region
     )
     return rds                                       # Devuelve cliente RDS
 
@@ -209,7 +210,7 @@ def crear_base_de_datos(rds, sg_db_id):
         else:
             raise
 
-# Crea y devuelve un cliente S3 con credenciales AWS     
+# Crea y devuelve un cliente S3 con credenciales AWS
 def crear_cliente_s3():
     s3_client = boto3.client(
         's3',
@@ -228,13 +229,13 @@ def subir_app_a_s3(s3_client):
     except (s3_client.exceptions.BucketAlreadyExists, 
             s3_client.exceptions.BucketAlreadyOwnedByYou): #si ya existe
         print(f"El bucket {aws_s3_name} ya existe")
-        
+
     archivos_a_incluir = [
         'app.css', 'app.js', 'config.php', 'index.html',
         'index.php', 'init_db.sql', 'login.css', 'login.html',
         'login.js', 'login.php'
     ]                                                      #Archivos que se subiran
-    
+
     for archivo in archivos_a_incluir:
         if os.path.exists(archivo):                        #Confirma si estan los archivos
             try:                                           #Busca si ya existen en la s3
@@ -243,23 +244,23 @@ def subir_app_a_s3(s3_client):
                 continue
             except:
                 pass                                       #si el archivo no existe lo sube
-                
+
             s3_client.upload_file(archivo, aws_s3_name, archivo)
             print(f"    {archivo} subido a S3")
         else:
             print(f"    {archivo} no existe, omitiendo")   #si el archivo no lo tengo localmente
-            
+
 # Crea un cliente EC2 tipo resource para manipular instancias
 def crear_cliente_ec2_resource():
     ec2_resource = boto3.resource(
         'ec2',                                   #Servicio ec2 en modo resource
-        aws_access_key_id=aws_access_key_id,  
-        aws_secret_access_key=aws_secret_access_key,  
-        aws_session_token=aws_session_token,  
-        region_name=aws_region  
+        aws_access_key_id=aws_access_key_id,
+        aws_secret_access_key=aws_secret_access_key,
+        aws_session_token=aws_session_token,
+        region_name=aws_region
     )
     return ec2_resource                          #Devuelve resource de ec2
-            
+
 # crear o reutilizar una instancia EC2 en AWS y preparar la aplicación web para que quede disponible
 def crear_instancia_ec2(ec2_resource, sg_ec2_id, db_endpoint):
 
@@ -271,7 +272,7 @@ def crear_instancia_ec2(ec2_resource, sg_ec2_id, db_endpoint):
             {'Name': 'instance-state-name', 'Values': ['running', 'stopped', 'pending']}
         ]
     ))
-    
+
     if existing_instances:
         instance = existing_instances[0]                 #Usa la instancia existente
         instance_id = instance.id                        #Id de la instancia
@@ -280,7 +281,7 @@ def crear_instancia_ec2(ec2_resource, sg_ec2_id, db_endpoint):
         ip_publica = instance.public_ip_address          #Obtengo IP publica y la muestro
         print(f"App disponible en http://{ip_publica}/login.php")
         return instance_id                               #Retorno la id
-        
+
     try:
         instances = ec2_resource.create_instances(
             ImageId=aws_image_id,                        #AMI usada
@@ -303,20 +304,19 @@ def crear_instancia_ec2(ec2_resource, sg_ec2_id, db_endpoint):
         instance = instances[0]
         instance.wait_until_running()                    #Espera estado de "running"
         instance.reload()                                #actualiza info
-        
-        while instance.public_ip_address is None:        #Esperar hasta obtener IP pública
-            time.sleep(3)                                #Espera un poco y recarga
-            instance.reload()
+
+        print("Instancia iniciada, desplegando la APP")  #Espera 40s mientras despliega app
+        time.sleep(40)
 
         ip_publica = instance.public_ip_address
-        print(f"Desplegando app en: http://{ip_publica}/login.php")
+        print(f"APP en: http://{ip_publica}/login.php")
         return instance_id
     except Exception as e:
         print(f"Error creando instancia EC2: {e}")       #Muestra si surge un error
         raise
 
 # Genera el script de Bash al inicializar la instancia
-def generar_user_data(db_endpoint):  
+def generar_user_data(db_endpoint):
     return f"""#!/bin/bash
 
 export AWS_ACCESS_KEY_ID={aws_access_key_id}
