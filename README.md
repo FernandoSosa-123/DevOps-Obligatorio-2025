@@ -1,5 +1,43 @@
 # DevOps-Obligatorio-2025
-Este obligatorio 2025 consta de 2 partes
+##Contenido:
+1- Introduccion
+
+2- Parte 1 script de Bash: ej1_crea_usuarios.sh
+
+3- Parte 2 script de Python: deploy_app.py
+
+4- GitHub y flujo de trabajo
+
+5- Entorno virtual python
+
+## Introduccion
+Banco Riendo estuvo analizando los beneficios de adoptar un modelo de nube hibrida por
+requerimientos del negocio la adopción deber ser lo más acelerada posible por lo tanto el
+equipo de DevOps del Banco decide contactar con usted para poder ayudarlos en este
+proceso.
+Para poder aprovechar al máximo el tiempo el equipo de DevOps le delega las siguientes
+tareas:
+
+1- Un script en Bash que cree los usuarios contenidos en un archivo pasado como
+parámetro, con información que especifica la Shell por defecto, directorio home,
+comentario y si se va a crear o no el directorio home si no existe. El script además debe
+incluir las siguientes opciones:
+o Informar, para cada usuario contenido en el archivo pasado como parámetro, el
+resultado de la creación (si fue creado con éxito o no).
+o Crear todos los usuarios con una contraseña pasada como parámetro de la
+opción.
+
+2- Un script en Python en donde se deberá automatizar el despliegue de la aplicación
+de recursos humanos en donde se alojan información sensible como son los nombres,
+email y salario de los empleados actuales de la empresa.
+Por lo tanto, se le pide los siguientes requerimientos:
+o Este despliegue considere todas las medidas de seguridad para evitar
+Filtraciones.
+o TODOS los cambios deberán ser trazables mediante un repositorio de GitHub.
+o LA DOCUMENTACION DEBERA ESTAR SI O SI EN EL README en la cual se
+deberá ver reflejado Descripción del proyecto, Requisitos // Requerimientos,
+Modo de uso, etc.
+
 ## 1-Script de bash
 El siguiente script ej1_crea_usuarios.sh se tendra que ejecutar con permisos sudo, 
 tambien se encuentra un ejemplo del archivo que contendra los usuarios a crear.
