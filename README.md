@@ -83,17 +83,25 @@ papanatas, se deberá (aparte de crear los usuarios pepe y elmaligno con contras
 por la salida estándar la información siguiente (por la opción -i):
 
 Usuario pepe creado con éxito con datos indicados:
+
     Comentario: Este es mi amigo pepe
+
     Dir home: :/home/jose
+
     Asegurado existencia de directorio home: SI
+
     Shell por defecto: /bin/bash
 
 ATENCION: el usuario papanatas no pudo ser creado
 
 Usuario elmaligno creado con éxito con datos indicados:
+
     Comentario: < valor por defecto >
+
     Dir home: < valor por defecto >
+
     Asegurado existencia de directorio home: < valor por defecto >
+
     Shell por defecto: /bin/el_maligno
 
 Se han creado 2 usuarios con éxito.
