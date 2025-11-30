@@ -1,7 +1,18 @@
 # DevOps-Obligatorio-2025
-Aqui se describiran los pasos y herramientas usadas para completar la aplicacion
+Este obligatorio 2025 consta de 2 partes
+## 1-Script de bash
+El siguiente script ej1_crea_usuarios.sh se tendra que ejecutar con permisos sudo, 
+tambien se encuentra un ejemplo del archivo que contendra los usuarios a crear.
 
-El script principal para desplegar la aplicacion es: deploy_app.py
+Ejemplo de uso: ej1_crea_usuarios.sh [-i] [-c contraseña ] usuarios.example
+## 2-Script de python
+El script principal para desplegar la aplicacion es deploy_app.py
+
+Para poder ejecutarlo sera necesario un entorno virtual en el cual instalara las
+bibliotecas necesarias con el archivo requirements.txt, los pasos estan descriptos en
+este readme. Ademas los archivos necesarios para la app se deben encontrar en el mismo
+directorio como se encuentran en la carpeta /python/
+ 
 # GITHUB
 
 Instalación y configuración inicial de github (una vez)
