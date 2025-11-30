@@ -27,13 +27,13 @@ while getopts ":ic:" opcion; do
     case "$opcion" in
         i) desplegar_info=1
 		#controlo si nesesito desplegar la informacion de creacion de usuario
-		;;		
+		;;
         c) contrase="$OPTARG"
-		#getopts pone automaticamente el argumento que continua del modificadores "-c" 
+		#getopts pone automaticamente el argumento que continua del modificadores "-c"
 		#de una opción en la variable OPTARG que sera la contaseña de los usuarios
 		;;
         :) echo "Error de uso, la opción -$OPTARG requiere un argumento." >&2
-		#La opcion ":" en un "case" usando "getopts" señala que no axiste un argumento despues del "-c" 
+		#La opcion ":" en un "case" usando "getopts" señala que no axiste un argumento despues del "-c"
 		mostrar_uso
 		;;
         \?) echo "Error de uso, opción inválida -$OPTARG" >&2
@@ -78,26 +78,26 @@ total_ok=0
 
 #con "IFS" denoto el separador ":" que se usara en el formato del archivo y se le asigna a las variables
 while IFS=":" read -r usuario comentario dir_home crear_home shell_def; do
-    #Cheque con el usuario exite como variable y si no existe con "continue" se omite los comandos restantes dentro del bucle 
+    #Cheque con el usuario exite como variable y si no existe con "continue" se omite los comandos restantes dentro del bucle
 	#para la iteración actual y pasa al siguiente iteración del bucle.
     [ -z "$usuario" ] && echo "ATENCION: usuario sin valor NO pudo ser creado" && echo "" && continue
-	
+
 	#Comprobamos si ya existe un usario creado con un "grep" silencioso, esto lo comprobamos con un "for" para usar el comando "continue" para el while
 	if grep -q "^${usuario}:" /etc/passwd; then
 		comprobacion_usuario=1
 	else
 		comprobacion_usuario=0
 	fi
-	
+
 	#Si existe un usuario, de una manera simiar nos saltaimos el bucle e informamos de esto
-	[ "$comprobacion_usuario" -eq 1 ] && echo "ATENCION: usuario ya existe" && echo "" && continue	
-	
+	[ "$comprobacion_usuario" -eq 1 ] && echo "ATENCION: usuario ya existe" && echo "" && continue
+
 	#convertimos a "crear_home" en minuscula si o si, para poder comprobar en cualquier caso que alla un "no"
     prueba_de_home="${crear_home,,}"
 
-    #Similar al caso anterior utilizo un "test" verificando si el valor de crear_home es un "no" y si lo es saltamos los comandos restantes y se pasa de bucle 
-    [ ! -d "$dir_home" ] && [ "$prueba_de_home" = "no" ] && echo "ATENCION: el usuario $usuario no pudo ser creado, el directorio: $dir_home no existe" && echo "" && continue	
-	
+    #Similar al caso anterior utilizo un "test" verificando si el valor de crear_home es un "no" y si lo es saltamos los comandos restantes y se pasa de bucle
+    [ ! -d "$dir_home" ] && [ "$prueba_de_home" = "no" ] && echo "ATENCION: el usuario $usuario no pudo ser creado, el directorio: $dir_home no existe" && echo "" && continue
+
     #Verifco los valores de las variables, si estos estan vacios los cambio con ":-" por "valor por defecto"
     comentario=${comentario:-"<valor por defecto>"}
     dir_home=${dir_home:-"<valor por defecto>"}
@@ -121,7 +121,7 @@ while IFS=":" read -r usuario comentario dir_home crear_home shell_def; do
 
     #Luego de construir el comando "useradd" y todas sus opciones, con "eval"
 	#que permite usar un string como si fuera un comando se implementara al usuario
-    eval $cmd
+    eval $cmd 2>/dev/null
     if [ $? -eq 0 ]; then
         #Comprobamos que el comando "useradd" sea exitoso y sumamos una ejecucion de este
 		((total_ok++))
@@ -131,13 +131,13 @@ while IFS=":" read -r usuario comentario dir_home crear_home shell_def; do
             echo "$usuario:$contrase" | chpasswd 2>/dev/null
         fi
 
-        if [ $desplegar_info -eq 1 ]; then 
+        if [ $desplegar_info -eq 1 ]; then
 		    #Desplegamos la informacion de creacion del usuario
             echo "Usuario $usuario creado con éxito con datos indicados:"
-            echo "Comentario: $comentario"
-            echo "Dir home: $dir_home"
-            echo "Asegurado existencia de directorio home: $crear_home"
-            echo "Shell por defecto: $shell_def"
+            echo "    Comentario: $comentario"
+            echo "    Dir home: $dir_home"
+            echo "    Asegurado existencia de directorio home: $crear_home"
+            echo "    Shell por defecto: $shell_def"
             echo ""
         fi
     else
