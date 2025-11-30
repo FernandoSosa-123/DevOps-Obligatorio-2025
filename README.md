@@ -1,6 +1,6 @@
 # DevOps-Obligatorio-2025
 
-##Contenido:
+## Contenido:
 1- Introduccion
 
 2- Parte 1 script de Bash: ej1_crea_usuarios.sh
@@ -11,7 +11,7 @@
 
 5- Entorno virtual python
 
-## Introduccion
+## 1- Introduccion
 Banco Riendo estuvo analizando los beneficios de adoptar un modelo de nube hibrida por
 requerimientos del negocio la adopción deber ser lo más acelerada posible por lo tanto 
 nos encargamos de las siguientes tareas:
@@ -20,22 +20,91 @@ nos encargamos de las siguientes tareas:
 parámetro, con información que especifica la Shell por defecto, directorio home,
 comentario y si se va a crear o no el directorio home si no existe. El script incluye las 
 siguientes opciones e informa, para cada usuario contenido en el archivo pasado como parámetro, el
-resultado de la creación (si fue creado con éxito o no) y crear todos los usuarios con una contraseña pasada como parámetro de la
-opción.
+resultado de la creación (si fue creado con éxito o no) y crear todos los usuarios con una contraseña 
+pasada como parámetro de la opción.
 
 2- Un script en Python en donde se deberá automatizar el despliegue de la aplicación
 de recursos humanos en donde se alojan información sensible como son los nombres,
 email y salario de los empleados actuales de la empresa con los siguientes requerimientos:
 Este despliegue considere todas las medidas de seguridad para evitar
-Filtraciones, todos los cambios deberán ser trazables mediante un repositorio de GitHub y LA DOCUMENTACION DEBERA ESTAR SI O SI EN EL README en la cual se
-deberá ver reflejado Descripción del proyecto, Requisitos // Requerimientos,
+Filtraciones, todos los cambios deberán ser trazables mediante un repositorio de GitHub y la documentacion
+se encontrara en el README en la cual se deberá ver reflejado Descripción del proyecto, Requisitos // Requerimientos,
 Modo de uso, etc.
 
-## 1-Script de bash
+## 2- Script de bash
 El siguiente script ej1_crea_usuarios.sh se tendra que ejecutar con permisos sudo, 
 tambien se encuentra un ejemplo del archivo que contendra los usuarios a crear.
 
 Ejemplo de uso: ej1_crea_usuarios.sh [-i] [-c contraseña ] usuarios.example
+
+El script crea los usuarios indicados en el archivo usuarios.example pasado
+como parámetro, definiendo para cada usuario (según el contenido del archivo pasado como
+parámetro) los campos de shell por defecto, directorio home, comentario y si se va a crear o no el
+directorio home si no existe. En caso que alguno de esos campos no esté definido para algún usuario
+en el archivo usuarios.example, se creara el usuario usando los valores por
+defecto que utilice el comando que crea los usuarios; useradd.
+La información de los usuarios, contenida en el archivo pasado como parámetro, estará separada por
+":" y tendrá una sintaxis de la forma:
+Nombre de usuario: Comentario: Directorio home: crear dir home si no existe (SI/NO): Shell por defecto
+Si el script recibe el modificador -i (desplegar información de la creación de los usuarios), para cada
+usuario a crear, contenido en el archivo usuarios.example, se desplegará información
+del resultado de la creación o intento de creación del mismo. Después del listado de información de
+cada usuario, y con una línea vacía de separación, se desplegará el total de usuarios creados con éxito.
+Si el script recibe el modificador -c, seguido de un texto que se considerará como una contraseña, el
+script asignará esa contraseña a cada uno de los usuarios creados. Si no se recibe este modificador
+(no se define una contraseña para los usuarios), se tomará (en este aspecto) el comportamiento por
+defecto del comando que se use para crear los usuarios; useradd.
+En caso de errores, el script terminara con un código de retorno distinto de 0 y diferente para
+cada posible error encontrado (como por ejemplo archivo inexistente, que no sea un archivo regular o
+no se tengan permisos de lectura sobre él, sintaxis incorrecta del archivo pasado como parámetro -
+donde alguna de sus líneas no contenga exactamente 4 campos separados por ":"-, parámetros
+incorrectos -como no recibirse la contraseña al usarse el modificador -c o usarse modificadores
+inválidos-, cantidad de parámetros incorrectos, y cualquier otro error que se produzca), y desplegará
+un mensaje de error adecuado por la salida estándar de errores.
+
+### 2.1- Ejemplo de uso 
+Suponga que el archivo Usuarios, que está en el directorio corriente de trabajo, contiene la siguiente
+información (los campos del archivo son Nombre de usuario: Comentario: Directorio home: crear el
+directorio home si no existe (SI/NO): Shell por defecto):
+
+pepe:Este es mi amigo pepe:/home/jose:SI:/bin/bash
+
+papanatas:Este es un usuario trucho:/trucho:NO:/bin/sh
+
+elmaligno::::/bin/el_maligno
+
+Y se ejecuta el comando:
+ej1_crea_usuarios.sh -i -c "123456" usuarios.example
+
+Entonces se crean con éxito los usuarios pepe y elmaligno pero no se puede crear el usuario
+papanatas, desplegara por la salida estándar la información siguiente (por la opción -i):
+Si se pueden crear con éxito los usuarios pepe y elmaligno pero no se puede crear el usuario
+papanatas, se deberá (aparte de crear los usuarios pepe y elmaligno con contraseña 123456) desplegar
+por la salida estándar la información siguiente (por la opción -i):
+
+Usuario pepe creado con éxito con datos indicados:
+    Comentario: Este es mi amigo pepe
+    Dir home: :/home/jose
+    Asegurado existencia de directorio home: SI
+    Shell por defecto: /bin/bash
+
+ATENCION: el usuario papanatas no pudo ser creado
+
+Usuario elmaligno creado con éxito con datos indicados:
+    Comentario: < valor por defecto >
+    Dir home: < valor por defecto >
+    Asegurado existencia de directorio home: < valor por defecto >
+    Shell por defecto: /bin/el_maligno
+
+Se han creado 2 usuarios con éxito.
+
+
+
+
+
+
+
+
 ## 2-Script de python
 El script principal para desplegar la aplicacion es deploy_app.py
 
