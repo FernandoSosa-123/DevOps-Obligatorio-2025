@@ -13,7 +13,7 @@ bibliotecas necesarias con el archivo requirements.txt, los pasos estan descript
 este readme. Ademas los archivos necesarios para la app se deben encontrar en el mismo
 directorio como se encuentran en la carpeta /python/
  
-# GITHUB
+# Como usar GITHUB
 
 Instalación y configuración inicial de github (una vez)
 ## Instalar Git
@@ -86,7 +86,7 @@ git push
 
 test_deploy_app.py Script temporal para testeo (NUNCA subir a git)
 
-# PYTHON Y CREACION DE AMBIENTE VIRTUAL
+# Como crear AMBIENTE VIRTUAL python
 verificar primero si esta python instalado python3 --version
 
 ## instalacion python y modulo ambiente virtual
