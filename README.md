@@ -67,11 +67,11 @@ Suponga que el archivo Usuarios, que está en el directorio corriente de trabajo
 información (los campos del archivo son Nombre de usuario: Comentario: Directorio home: crear el
 directorio home si no existe (SI/NO): Shell por defecto):
 
-pepe:Este es mi amigo pepe:/home/jose:SI:/bin/bash
+    pepe:Este es mi amigo pepe:/home/jose:SI:/bin/bash
 
-papanatas:Este es un usuario trucho:/trucho:NO:/bin/sh
+    papanatas:Este es un usuario trucho:/trucho:NO:/bin/sh
 
-elmaligno::::/bin/el_maligno
+    elmaligno::::/bin/el_maligno
 
 Y se ejecuta el comando:
 ej1_crea_usuarios.sh -i -c "123456" usuarios.example
@@ -107,19 +107,51 @@ Usuario elmaligno creado con éxito con datos indicados:
 Se han creado 2 usuarios con éxito.
 
 
-
-
-
-
-
-
-## 2-Script de python
+## 3- Script de python
 El script principal para desplegar la aplicacion es deploy_app.py
 
-Para poder ejecutarlo sera necesario un entorno virtual en el cual instalara las
-bibliotecas necesarias con el archivo requirements.txt, los pasos estan descriptos en
-este readme. Ademas los archivos necesarios para la app se deben encontrar en el mismo
-directorio como se encuentran en la carpeta /python/
+Este script despliega automáticamente una aplicación web PHP con apache en AWS, creando y configurando todos 
+los recursos necesarios AWS que se detallaran a continuacion:
+
+    1) Importa librerias y variables de entorno desde el archivo .env
+
+    2) Crea y devuelve un cliente EC2 autenticado con las credenciales del .env
+
+    3) Crea el key pair en AWS y evita duplicados, ademas almacena el .pem localmente
+
+    4) Crea el Security Group para EC2, si existe obtiene su ID
+
+    5) Gestiona el Security Group de la base de datos (crea o reutiliza el existente)
+
+    6) Abre puertos (22/80) en EC2 y permite a EC2 acceder a DB (3306)
+
+    7) Crea cliente RDS para administrar instancias de base de datos
+
+    8) Consulta RDS y devuelve el endpoint público de la DB
+
+    9) Crea la instancia RDS o usa la existente y devuelve su endpoint
+
+    10) Crea y devuelve un cliente S3 con credenciales AWS
+
+    11) Crea un cliente EC2 tipo resource para manipular instancias
+
+    12) crear o reutilizar una instancia EC2 en AWS y preparar la aplicación web para que quede disponible
+
+    13) Genera el script de Bash al inicializar la instancia 
+
+        13.1) actualiza sistema e instala paquetes
+
+        13.2) configura e inicia servicios apache y php
+
+        13.3) copia aplicacion desde el s3
+
+        13.4) Importar base de datos a RDS
+
+        13.5) Crear archivo .env con la configuración
+
+        13.6) Configurar permisos
+
+        13.7) Reinicia los servicios para aplicar cambios
  
 # Como usar GITHUB
 
