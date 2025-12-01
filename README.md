@@ -5,21 +5,21 @@
 
 2- Parte 1 script de Bash: ej1_crea_usuarios.sh
 
-    2.1- Ejemplo de uso
+   2.1- Ejemplo de uso
 
 3- Parte 2 script de Python: deploy_app.py
 
-    3.1- Requerimientos para desplegar la aplicacion
+   3.1- Requerimientos para desplegar la aplicacion
 
-    3.2- como crear ambiente virtual python
+   3.2- como crear ambiente virtual python
 
 4- GitHub y flujo de trabajo
 
-    4.1- Instalacion y configuracion inicial
+   4.1- Instalacion y configuracion inicial
 
-    4.2- Flujo de trabajo diario
+   4.2- Flujo de trabajo diario
 
-    4.3- Archivos importantes
+   4.3- Archivos importantes
 
 ## 1- Introduccion
 Banco Riendo estuvo analizando los beneficios de adoptar un modelo de nube híbrida por
