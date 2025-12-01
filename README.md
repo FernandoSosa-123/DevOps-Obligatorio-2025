@@ -5,9 +5,21 @@
 
 2- Parte 1 script de Bash: ej1_crea_usuarios.sh
 
+    2.1- Ejemplo de uso
+
 3- Parte 2 script de Python: deploy_app.py
 
+    3.1- Requerimientos para desplegar la aplicacion
+
+    3.2- como crear ambiente virtual python
+
 4- GitHub y flujo de trabajo
+
+    4.1- Instalacion y configuracion inicial
+
+    4.2- Flujo de trabajo diario
+
+    4.3- Archivos importantes
 
 ## 1- Introduccion
 Banco Riendo estuvo analizando los beneficios de adoptar un modelo de nube híbrida por
@@ -161,7 +173,7 @@ c) Tendra que crear un archivo .env tomando de ejemplo el .env.example con todas
 d) Tendra que crear un ambiente virtual .venv de python donde instalara las librerias necesarias desde el 
 archivo requirements.txt para ejecutar la aplicacion deploy_app.py 
 
-### 3.2 Como crear AMBIENTE VIRTUAL python
+### 3.2 Como crear ambiente virtual python
 verificar primero si esta python instalado python3 --version
 
 #### instalacion python y modulo ambiente virtual
@@ -195,24 +207,25 @@ pip install dotenv
 
 
 ## 4- GITHUB
-
-Instalación y configuración inicial de github (una vez)
-### Instalar Git
+GitHub es la plataforma que usaremos para gestionar este proyecto, facilitando el trabajo colaborativo, 
+permitiendo crear ramas, revisar cambios, integrar código y mantener un historial del desarrollo.
+### 4.1- Instalación y configuración inicial
+#### Instalar Git
 sudo apt install git-all
-### Generar clave SSH
+#### Generar clave SSH
 ssh-keygen -t ed25519 -C "tu_email@example.com"
-### Copiar clave y agregar en GitHub
+#### Copiar clave y agregar en GitHub
 cat ~/.ssh/id_ed25519.pub
-### Pegar en GitHub → Settings → SSH and GPG keys
-### Verificar conexión
+#### Pegar en GitHub → Settings → SSH and GPG keys
+#### Verificar conexión
 ssh -T git@github.com
-### Clonar repositorio git
+#### Clonar repositorio git
 git clone git@github.com:FernandoSosa-123/DevOps-Obligatorio-2025.git
 
-### Creacion de nueva rama
+#### Creacion de nueva rama
 git checkout -b feature/mirama
 
-### subir rama por primera vez
+#### subir rama por primera vez
 git add .
 
 git commit -m"Descripcion de cambios"
@@ -220,8 +233,8 @@ git commit -m"Descripcion de cambios"
 git push --set-upstream origin feature/mirama
 
 en github abrir pull request y aprobar el merge main
-## Flujo de trabajo diario github
-### Hacer cambios en archivos...
+### 4.2- Flujo de trabajo diario
+#### Hacer cambios en archivos
 git checkout feature/mirama
 
 git add . (todos los archivos)
@@ -235,7 +248,7 @@ git commit -m "Descripción de los cambios"
 git push
 
 en github abrir pull request y aprobar el merge main 
-### Flujo copiar main a mi rama y subir rama
+#### Flujo copiar main a mi rama y subir rama
 git checkout main
 
 git fetch
@@ -247,7 +260,7 @@ git checkout feature/mirama
 git merge main
 
 git push
-### Flujo copiar mi rama a la main
+#### Flujo copiar mi rama a la main
 git checkout main
 
 git pull
@@ -255,7 +268,7 @@ git pull
 git merge feature/mirama
 
 git push
-## Archivos importantes github
+### 4.3- Archivos importantes
 .gitignore: Archivos que Git ignorará
 
 .env.example: Template de variables de entorno
