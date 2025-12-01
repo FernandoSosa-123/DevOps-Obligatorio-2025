@@ -1,7 +1,7 @@
 # DevOps-Obligatorio-2025
 
 ## Contenido:
-1- Introduccion
+1- Introducción
 
 2- Parte 1 script de Bash: ej1_crea_usuarios.sh
 
@@ -9,10 +9,8 @@
 
 4- GitHub y flujo de trabajo
 
-5- Entorno virtual python
-
 ## 1- Introduccion
-Banco Riendo estuvo analizando los beneficios de adoptar un modelo de nube hibrida por
+Banco Riendo estuvo analizando los beneficios de adoptar un modelo de nube híbrida por
 requerimientos del negocio la adopción deber ser lo más acelerada posible por lo tanto 
 nos encargamos de las siguientes tareas:
 
@@ -27,13 +25,13 @@ pasada como parámetro de la opción.
 de recursos humanos en donde se alojan información sensible como son los nombres,
 email y salario de los empleados actuales de la empresa con los siguientes requerimientos:
 Este despliegue considere todas las medidas de seguridad para evitar
-Filtraciones, todos los cambios deberán ser trazables mediante un repositorio de GitHub y la documentacion
-se encontrara en el README en la cual se deberá ver reflejado Descripción del proyecto, Requisitos // Requerimientos,
-Modo de uso, etc.
+filtraciones, todos los cambios deberán ser trazables mediante un repositorio de GitHub y la documentacion
+se encontrara en el README en la cual se deberá ver reflejado la descripción del proyecto, requerimientos,
+modo de uso, etc.
 
 ## 2- Script de bash
-El siguiente script ej1_crea_usuarios.sh se tendra que ejecutar con permisos sudo, 
-tambien se encuentra un ejemplo del archivo que contendra los usuarios a crear.
+El siguiente script ej1_crea_usuarios.sh se tendrá que ejecutar con permisos sudo, 
+también se encuentra un ejemplo del archivo que contendrá los usuarios a crear.
 
 Ejemplo de uso: ej1_crea_usuarios.sh [-i] [-c contraseña ] usuarios.example
 
@@ -108,16 +106,16 @@ por la salida estándar la información siguiente (por la opción -i):
 
 
 ## 3- Script de python
-El script principal para desplegar la aplicacion es deploy_app.py
+El script principal para desplegar la aplicación es deploy_app.py
 
 Este script despliega automáticamente una aplicación web PHP con apache en AWS, creando y configurando todos 
-los recursos necesarios AWS que se detallaran a continuacion:
+los recursos necesarios AWS que se detallarán a continuacion:
 
-    1) Importa librerias y variables de entorno desde el archivo .env
+    1) Importa librerías y variables de entorno desde el archivo .env
 
     2) Crea y devuelve un cliente EC2 autenticado con las credenciales del .env
 
-    3) Crea el key pair en AWS y evita duplicados, ademas almacena el .pem localmente
+    3) Crea el key pair en AWS y evita duplicados, además almacena el .pem localmente
 
     4) Crea el Security Group para EC2, si existe obtiene su ID
 
