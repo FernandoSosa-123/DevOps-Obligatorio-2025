@@ -82,29 +82,29 @@ Si se pueden crear con éxito los usuarios pepe y elmaligno pero no se puede cre
 papanatas, se deberá (aparte de crear los usuarios pepe y elmaligno con contraseña 123456) desplegar
 por la salida estándar la información siguiente (por la opción -i):
 
-Usuario pepe creado con éxito con datos indicados:
+    Usuario pepe creado con éxito con datos indicados:
 
-    Comentario: Este es mi amigo pepe
+        Comentario: Este es mi amigo pepe
 
-    Dir home: :/home/jose
+        Dir home: :/home/jose
 
-    Asegurado existencia de directorio home: SI
+        Asegurado existencia de directorio home: SI
 
-    Shell por defecto: /bin/bash
+        Shell por defecto: /bin/bash
 
-ATENCION: el usuario papanatas no pudo ser creado
+    ATENCION: el usuario papanatas no pudo ser creado
 
-Usuario elmaligno creado con éxito con datos indicados:
+    Usuario elmaligno creado con éxito con datos indicados:
 
-    Comentario: < valor por defecto >
+        Comentario: < valor por defecto >
 
-    Dir home: < valor por defecto >
+        Dir home: < valor por defecto >
 
-    Asegurado existencia de directorio home: < valor por defecto >
+        Asegurado existencia de directorio home: < valor por defecto >
 
-    Shell por defecto: /bin/el_maligno
+        Shell por defecto: /bin/el_maligno
 
-Se han creado 2 usuarios con éxito.
+    Se han creado 2 usuarios con éxito.
 
 
 ## 3- Script de python
@@ -153,10 +153,53 @@ los recursos necesarios AWS que se detallaran a continuacion:
 
         13.7) Reinicia los servicios para aplicar cambios
  
-# Como usar GITHUB
+### 3.1- Requerimientos para desplegar la aplicacion
+a) Sera necesario contar con los servicios aws y las Credenciales STS (sean temporales o fijas)
+
+b) Se debera contar con los archivos de la App y el archivo init_db.sql
+
+c) Tendra que crear un archivo .env tomando de ejemplo el .env.example con todas las credenciales a usar
+
+d) Tendra que crear un ambiente virtual .venv de python donde instalara las librerias necesarias desde el 
+archivo requirements.txt para ejecutar la aplicacion deploy_app.py 
+
+### 3.2 Como crear AMBIENTE VIRTUAL python
+verificar primero si esta python instalado python3 --version
+
+#### instalacion python y modulo ambiente virtual
+sudo apt update
+
+sudo apt install python3
+
+sudo apt install python3-venv
+
+#### creacion de ambiente virtual
+python3 -m venv .venv
+
+#### Activacion del entorno
+source .venv/bin/activate
+
+#### Desactivacion del entorno
+deactivate
+
+### Instalacion de Dependencias
+#### Activar tu entorno virtual
+source .venv/bin/activate
+
+#### Opcion 1: Instalar desde requirements.txt
+pip install -r requirements.txt
+
+#### Opcion 2 Instalar manualmente
+pip install boto3
+
+pip install dotenv
+
+
+
+## 4- GITHUB
 
 Instalación y configuración inicial de github (una vez)
-## Instalar Git
+### Instalar Git
 sudo apt install git-all
 ### Generar clave SSH
 ssh-keygen -t ed25519 -C "tu_email@example.com"
@@ -168,7 +211,6 @@ ssh -T git@github.com
 ### Clonar repositorio git
 git clone git@github.com:FernandoSosa-123/DevOps-Obligatorio-2025.git
 
-## Creacion y seleccion de rama
 ### Creacion de nueva rama
 git checkout -b feature/mirama
 
@@ -177,7 +219,7 @@ git add .
 
 git commit -m"Descripcion de cambios"
 
-git push --set-upstram origin feature/mirama
+git push --set-upstream origin feature/mirama
 
 en github abrir pull request y aprobar el merge main
 ## Flujo de trabajo diario github
@@ -225,34 +267,3 @@ git push
 .venv/ Entorno virtual de python (NUNCA subir a git)
 
 test_deploy_app.py Script temporal para testeo (NUNCA subir a git)
-
-# Como crear AMBIENTE VIRTUAL python
-verificar primero si esta python instalado python3 --version
-
-## instalacion python y modulo ambiente virtual
-sudo apt update
-
-sudo apt install python3
-
-sudo apt install python3-venv
-
-## creacion de ambiente virtual
-python3 -m venv .venv
-
-## Activacion del entorno
-source .venv/bin/activate
-
-## Desactivacion del entorno
-deactivate
-
-## Instalacion de Dependencias 
-### Activar tu entorno virtual
-source .venv/bin/activate
-
-### Opcion 1: Instalar desde requirements.txt
-pip install -r requirements.txt
-
-### Opcion 2 Instalar manualmente
-pip install boto3
-
-pip install dotenv
